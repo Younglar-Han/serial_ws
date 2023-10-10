@@ -8,7 +8,6 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(serial REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
@@ -20,7 +19,6 @@ target_compile_features(ros2_listener PUBLIC c_std_99 cxx_std_17)  # Require C99
 ament_target_dependencies(
   ros2_listener
   rclcpp
-  std_msgs
   serial
   geometry_msgs
 )
