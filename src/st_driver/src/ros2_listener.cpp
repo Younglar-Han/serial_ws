@@ -7,14 +7,14 @@ class Listener : public rclcpp::Node
 public:
   Listener() : Node("ros2_listener")
   {
-    subscription_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10, std::bind(&Listener::callback, this, std::placeholders::_1));
+    subscription_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, std::bind(&Listener::callback, this, std::placeholders::_1));
   }
 
 private:
   void callback(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
     RCLCPP_INFO(this->get_logger(), "linearx: %f angularz: %f", msg->linear.x, msg->angular.z);
-    serial::Serial my_serial("/dev/ttyUSB0", 9600, serial::Timeout::simpleTimeout(1000));
+    serial::Serial my_serial("/dev/tty_SERIAL0", 9600, serial::Timeout::simpleTimeout(1000));
     if (!my_serial.isOpen())
     {
       my_serial.open();
