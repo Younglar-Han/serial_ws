@@ -10,6 +10,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(serial REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 add_executable(ros2_listener src/ros2_listener.cpp)
 target_include_directories(ros2_listener PUBLIC
@@ -21,6 +24,9 @@ ament_target_dependencies(
   rclcpp
   serial
   geometry_msgs
+  std_msgs
+  nav_msgs
+  tf2_ros
 )
 
 install(TARGETS ros2_listener
