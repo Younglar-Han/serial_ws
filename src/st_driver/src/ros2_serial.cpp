@@ -7,14 +7,14 @@
 #include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
-class Listener : public rclcpp::Node
+class Ros2_Serial : public rclcpp::Node
 {
 public:
-  Listener() : Node("ros2_listener")
+  Ros2_Serial() : Node("ros2_serial")
   {
-    vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, std::bind(&Listener::callback, this, std::placeholders::_1));
+    vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, std::bind(&Ros2_Serial::callback, this, std::placeholders::_1));
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-    timer_ = this->create_wall_timer(50ms, std::bind(&Listener::timer_callback, this));
+    timer_ = this->create_wall_timer(50ms, std::bind(&Ros2_Serial::timer_callback, this));
     odom_boadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
     my_serial.setPort("/dev/tty_SERIAL0");
     my_serial.setBaudrate(9600);
@@ -71,12 +71,10 @@ private:
     {
       return;
     }
-    // print as hex
-    printf("header: %x \n", header);
-    printf("linearx: %f \n", linearx);
-    printf("angularz: %f \n", angularz);
-    printf("tailer: %x \n", tailer);
+    vx = linearx;
+    vth = angularz;
     my_serial.flush();
+
     current_time = rclcpp::Clock().now();
     double dt = (current_time - last_time).seconds();
     last_time = current_time;
@@ -139,7 +137,7 @@ private:
 int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<Listener>());
+  rclcpp::spin(std::make_shared<Ros2_Serial>());
   rclcpp::shutdown();
   return 0;
 }

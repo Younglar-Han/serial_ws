@@ -14,13 +14,13 @@ find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-add_executable(ros2_listener src/ros2_listener.cpp)
-target_include_directories(ros2_listener PUBLIC
+add_executable(ros2_serial src/ros2_serial.cpp)
+target_include_directories(ros2_serial PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_compile_features(ros2_listener PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+target_compile_features(ros2_serial PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 ament_target_dependencies(
-  ros2_listener
+  ros2_serial
   rclcpp
   serial
   geometry_msgs
@@ -29,7 +29,7 @@ ament_target_dependencies(
   tf2_ros
 )
 
-install(TARGETS ros2_listener
+install(TARGETS ros2_serial
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
