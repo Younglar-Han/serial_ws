@@ -15,7 +15,7 @@ public:
     vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, std::bind(&Ros2_Serial::callback, this, std::placeholders::_1));
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
     timer_ = this->create_wall_timer(50ms, std::bind(&Ros2_Serial::timer_callback, this));
-    odom_boadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    tf_boadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
     my_serial.setPort("/dev/tty_SERIAL0");
     my_serial.setBaudrate(9600);
     my_serial.setTimeout(100, 100, 0, 100, 0);
@@ -116,13 +116,19 @@ private:
     odom_trans.transform.rotation.y = 0.0;
     odom_trans.transform.rotation.z = sin(th / 2);
 
-    odom_boadcaster_->sendTransform(odom_trans);
+    geometry_msgs::msg::TransformStamped footprint_trans;
+    footprint_trans.header.stamp = current_time;
+    footprint_trans.header.frame_id = "base_link";
+    footprint_trans.child_frame_id = "base_footprint";
+
+    tf_boadcaster_->sendTransform(odom_trans);
+    tf_boadcaster_->sendTransform(footprint_trans);
     odom_pub_->publish(message);
   }
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
-  std::shared_ptr<tf2_ros::TransformBroadcaster> odom_boadcaster_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_boadcaster_;
   serial::Serial my_serial;
   rclcpp::Time last_time;
   rclcpp::Time current_time;
