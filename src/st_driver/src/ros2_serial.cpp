@@ -14,15 +14,19 @@ public:
   {
     vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, std::bind(&Ros2_Serial::callback, this, std::placeholders::_1));
     odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-    timer_ = this->create_wall_timer(50ms, std::bind(&Ros2_Serial::timer_callback, this));
+    timer_ = this->create_wall_timer(30ms, std::bind(&Ros2_Serial::timer_callback, this));
     tf_boadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    last_time = rclcpp::Clock().now();
+    current_time = rclcpp::Clock().now();
     my_serial.setPort("/dev/tty_SERIAL0");
-    my_serial.setBaudrate(9600);
+    my_serial.setBaudrate(115200);
     my_serial.setTimeout(100, 100, 0, 100, 0);
     if (!my_serial.isOpen())
     {
       my_serial.open();
     }
+
+    printf("Launched!\n");
   }
 
 private:
@@ -86,6 +90,17 @@ private:
     y += delta_y;
     th += delta_th;
 
+    if(abs(x) > 1e5 || abs(y) > 1e5 || abs(th) > 1e5)
+    {
+      printf("out bound!!!");
+      printf("x: %f \n", x);
+      printf("y: %f \n", y);
+      printf("th: %f \n", th);
+      x = 0;
+      y = 0;
+      th = 0;
+    }
+
     auto message = nav_msgs::msg::Odometry();
     message.header.stamp = current_time;
     message.header.frame_id = "odom";
@@ -121,8 +136,15 @@ private:
     footprint_trans.header.frame_id = "base_link";
     footprint_trans.child_frame_id = "base_footprint";
 
+    geometry_msgs::msg::TransformStamped laser_trans;
+    laser_trans.header.stamp = current_time;
+    laser_trans.header.frame_id = "base_link";
+    laser_trans.child_frame_id = "base_laser";
+    odom_trans.transform.translation.z = 0.18;
+
     tf_boadcaster_->sendTransform(odom_trans);
     tf_boadcaster_->sendTransform(footprint_trans);
+    tf_boadcaster_->sendTransform(laser_trans);
     odom_pub_->publish(message);
   }
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
@@ -138,6 +160,7 @@ private:
   double vx = 0;
   double vy = 0;
   double vth = 0;
+  int state = 0;
 };
 
 int main(int argc, char *argv[])
